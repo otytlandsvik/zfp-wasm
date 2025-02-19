@@ -1,0 +1,75 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Simple template</title>
+    <script
+      type="text/javascript"
+      src="build/bin/decompress_web.js"
+      fetchpriority="high"
+    ></script>
+  </head>
+  <body>
+    <script>
+      let arrayFromServer = [];
+      fetch("/doubles.dat.zfp")
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.arrayBuffer();
+        })
+        .then((data) => {
+          console.log("Byte array:", data);
+          // Convert back to Uint8Array if needed
+          arrayFromServer = new Int8Array(data);
+          console.log("Typed array:", arrayFromServer);
+        })
+        .catch((error) => console.error("Error fetching JSON:", error));
+    </script>
+    <!-- <script> -->
+    <!--   let compressedArray = []; -->
+    <!--   fetch("/from_message.json") -->
+    <!--     .then((response) => { -->
+    <!--       if (!response.ok) { -->
+    <!--         throw new Error(`HTTP error! Status: ${response.status}`); -->
+    <!--       } -->
+    <!--       return response.json(); -->
+    <!--     }) -->
+    <!--     .then((data) => { -->
+    <!--       console.log("Byte array:", data); -->
+    <!--       // Convert back to Uint8Array if needed -->
+    <!--       compressedArray = new Uint8Array(data); -->
+    <!--       console.log("Uint8Array:", compressedArray); -->
+    <!--     }) -->
+    <!--     .catch((error) => console.error("Error fetching JSON:", error)); -->
+    <!-- </script> -->
+    <!-- <script -->
+    <!--   type="text/javascript" -->
+    <!--   fetchpriority="low" -->
+    <!--   defer -->
+    <!--   src="test.js" -->
+    <!-- ></script> -->
+    <!-- <script fetchpriority="low"> -->
+    <!--   // WebAssembly.instantiateStreaming( -->
+    <!--   //   fetch("build/tools/sz3c/SZ3c.wasm"), -->
+    <!--   // ).then((result) => { -->
+    <!--   // Module().then((result) => { -->
+    <!--   // const add = Module.instance.exports.add; -->
+    <!--   // console.log(add(1, 2)); -->
+    <!--   let data = [0.5678, 1.14567, 1.11111, 7.96969, 6.96969]; -->
+    <!--   let typedData = new Float64Array(data); -->
+    <!--   let pointer = Module._exported_malloc( -->
+    <!--     typedData.length * typedData.BYTES_PER_ELEMENT, -->
+    <!--   ); -->
+    <!--   Module.HEAPF64.set(typedData, pointer / typedData.BYTES_PER_ELEMENT); -->
+    <!--   Module._comp_test(pointer); -->
+    <!--   let newData = Module.HEAPF64.subarray( -->
+    <!--     pointer / typedData.BYTES_PER_ELEMENT, -->
+    <!--     pointer / typedData.BYTES_PER_ELEMENT + typedData.length, -->
+    <!--   ); -->
+    <!--   console.log(newData); -->
+    <!--   // }); -->
+    <!-- </script> -->
+  </body>
+</html>
