@@ -58,6 +58,8 @@ set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})
 # Top level options
 #------------------------------------------------------------------------------#
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # Windows (Visual Studio) specific options
 if(MSVC)
   # Use this to get a usable export library when building a DLL on Windows

@@ -8,3 +8,5 @@ wheelhouse
 zfpy.egg-info
 modules
 .direnv
+.cache/clangd/index
+compile_commands.json
