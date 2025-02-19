@@ -1,35 +1,35 @@
 /* minimal code example showing how to call the zfp (de)compressor */
 
+#include "zfp.h"
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "zfp.h"
 
 /* compress or decompress array */
-static int
-compress(double* array, size_t nx, size_t ny, size_t nz, double tolerance, zfp_bool decompress)
-{
+static int compress(double *array, size_t nx, double tolerance,
+                    zfp_bool decompress) {
   int status = 0;    /* return value: 0 = success */
   zfp_type type;     /* array scalar type */
-  zfp_field* field;  /* array meta data */
-  zfp_stream* zfp;   /* compressed stream */
-  void* buffer;      /* storage for compressed stream */
+  zfp_field *field;  /* array meta data */
+  zfp_stream *zfp;   /* compressed stream */
+  void *buffer;      /* storage for compressed stream */
   size_t bufsize;    /* byte size of compressed buffer */
-  bitstream* stream; /* bit stream to write to or read from */
+  bitstream *stream; /* bit stream to write to or read from */
   size_t zfpsize;    /* byte size of compressed stream */
 
-  /* allocate meta data for the 3D array a[nz][ny][nx] */
+  /* allocate meta data for the 1D array a[nx] */
   type = zfp_type_double;
-  field = zfp_field_3d(array, type, nx, ny, nz);
+  field = zfp_field_1d(array, type, nx);
 
   /* allocate meta data for a compressed stream */
   zfp = zfp_stream_open(NULL);
 
   /* set compression mode and parameters via one of four functions */
-/*  zfp_stream_set_reversible(zfp); */
-/*  zfp_stream_set_rate(zfp, rate, type, zfp_field_dimensionality(field), zfp_false); */
-/*  zfp_stream_set_precision(zfp, precision); */
+  /*  zfp_stream_set_reversible(zfp); */
+  /*  zfp_stream_set_rate(zfp, rate, type, zfp_field_dimensionality(field),
+   * zfp_false); */
+  /*  zfp_stream_set_precision(zfp, precision); */
   zfp_stream_set_accuracy(zfp, tolerance);
 
   /* allocate buffer for compressed data */
@@ -44,23 +44,28 @@ compress(double* array, size_t nx, size_t ny, size_t nz, double tolerance, zfp_b
   /* compress or decompress entire array */
   if (decompress) {
     /* read compressed stream and decompress and output array */
-    zfpsize = fread(buffer, 1, bufsize, stdin);
+    FILE *fp = fopen("doubles.dat.zfp", "rb");
+    zfpsize = fread(buffer, 1, bufsize, fp);
+    fclose(fp);
     if (!zfp_decompress(zfp, field)) {
       fprintf(stderr, "decompression failed\n");
       status = EXIT_FAILURE;
+    } else {
+      FILE *fp = fopen("decompressed_doubles.dat", "wb");
+      fwrite(array, sizeof(double), zfp_field_size(field, NULL), fp);
+      fclose(fp);
     }
-    else
-      fwrite(array, sizeof(double), zfp_field_size(field, NULL), stdout);
-  }
-  else {
+  } else {
     /* compress array and output compressed stream */
     zfpsize = zfp_compress(zfp, field);
     if (!zfpsize) {
       fprintf(stderr, "compression failed\n");
       status = EXIT_FAILURE;
+    } else {
+      FILE *fp = fopen("doubles.dat.zfp", "wb");
+      fwrite(buffer, 1, zfpsize, fp);
+      fclose(fp);
     }
-    else
-      fwrite(buffer, 1, zfpsize, stdout);
   }
 
   /* clean up */
@@ -73,30 +78,31 @@ compress(double* array, size_t nx, size_t ny, size_t nz, double tolerance, zfp_b
   return status;
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char *argv[]) {
   /* use -d to decompress rather than compress data */
   zfp_bool decompress = (argc == 2 && !strcmp(argv[1], "-d"));
 
-  /* allocate 100x100x100 array of doubles */
-  size_t nx = 100;
-  size_t ny = 100;
-  size_t nz = 100;
-  double* array = malloc(nx * ny * nz * sizeof(double));
+  /* allocate array of doubles */
+  size_t nx = 1562;
+  double *array = malloc(nx * sizeof(double));
 
-  if (!decompress) {
-    /* initialize array to be compressed */
-    size_t i, j, k;
-    for (k = 0; k < nz; k++)
-      for (j = 0; j < ny; j++)
-        for (i = 0; i < nx; i++) {
-          double x = 2.0 * i / nx;
-          double y = 2.0 * j / ny;
-          double z = 2.0 * k / nz;
-          array[i + nx * (j + ny * k)] = exp(-(x * x + y * y + z * z));
-        }
+  /* read doubles from file */
+  FILE *fp = fopen("../doubles.dat", "rb");
+  if (!fp) {
+    perror("Error opening file");
+    exit(1);
   }
 
+  size_t doubles_read = fread(array, sizeof(double), nx, fp);
+  if (doubles_read != nx) {
+    if (feof(fp))
+      printf("Reached end of file, read %zu elements\n", doubles_read);
+    else
+      perror("Error reading file");
+  }
+
+  fclose(fp);
+
   /* compress or decompress array */
-  return compress(array, nx, ny, nz, 1e-3, decompress);
+  return compress(array, nx, 1e-3, decompress);
 }

@@ -40,6 +40,12 @@ target_compile_definitions(ppm PRIVATE ${ppm_private_defs})
 add_executable(simple simple.c)
 target_link_libraries(simple zfp)
 
+# Attempt to build web API only if built with emscripten
+if (CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    add_executable(decompress_web decompress_web.c)
+    target_link_libraries(decompress_web zfp)
+endif()
+
 add_executable(speed speed.c)
 target_link_libraries(speed zfp)
 
