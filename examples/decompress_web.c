@@ -5,6 +5,10 @@
 
 #include <emscripten.h>
 
+/* Hacky way to expose malloc, for now */
+EMSCRIPTEN_KEEPALIVE
+void *exported_malloc(size_t size) { return malloc(size); }
+
 EMSCRIPTEN_KEEPALIVE
 /* Decompress array */
 double *decompress(char *compressed, size_t compressed_size, size_t nx) {
@@ -15,7 +19,7 @@ double *decompress(char *compressed, size_t compressed_size, size_t nx) {
   size_t bufsize;    /* byte size of compressed buffer */
   bitstream *stream; /* bit stream to write to or read from */
   size_t zfpsize;    /* byte size of compressed stream */
-  double tolerance = 1e-3;
+  double tolerance = 1e-1;
 
   /* Allocate buffer for decompressed doubles */
   double *decompressed = calloc(nx, sizeof(double));

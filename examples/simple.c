@@ -104,5 +104,5 @@ int main(int argc, char *argv[]) {
   fclose(fp);
 
   /* compress or decompress array */
-  return compress(array, nx, 1e-3, decompress);
+  return compress(array, nx, 1e-1, decompress);
 }
